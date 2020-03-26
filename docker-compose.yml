@@ -1,0 +1,28 @@
+version: '3.6'
+
+services:
+  python_code:
+    build: .
+    depends_on:
+      - db
+    environment:
+      STAGE: test
+    networks:
+      - default
+    volumes:
+      - ./app:/usr/src/app/app
+      - ./scripts:/usr/src/app/scripts
+
+  db:
+    environment:
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: test
+    image: postgres:latest
+    networks:
+      - default
+    ports:
+      - 5405:5432
+    restart: always
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data

@@ -1,0 +1,72 @@
+#!/bin/bash
+
+######################
+### Trap functions ###
+######################
+
+on_error(){
+  red_text 'Whoops, we have a problem. Please check the logs!'
+  exit 1
+}
+
+############################
+### Setting default trap ###
+############################
+
+trap 'on_error' ERR
+default_trap=$(trap)
+
+cd $(dirname $(dirname $0))
+
+blue_text(){
+  echo "`tput setaf 4`$@`tput sgr0`"
+}
+
+yellow_text(){
+  echo "`tput setaf 3`$@`tput sgr0`"
+}
+
+red_text(){
+  echo "`tput setaf 1`$@`tput sgr0`"
+}
+
+green_text(){
+  echo "`tput setaf 2`$@`tput sgr0`"
+}
+
+build_docker_image(){
+  if [ -f Dockerfile  ]; then
+    docker build --build-arg UID=$UID -t trucker-recommender-api .
+  else
+    red_text 'Dockerfile was not found!'
+    return
+  fi
+}
+
+##########################
+### Build docker image ###
+##########################
+
+yellow_text 'Building images, this might take a while...'
+
+if [[ $(docker images | grep trucker-recommender)  ]]; then
+green_text 'Found trucker-recommender-api docker image. Do you want to rebuild it? (y/N)'
+  read build_image
+
+  if [[ $build_image == 'y'  ]]; then
+    build_docker_image
+  else
+    yellow_text 'Ok, skipping rebuild...'
+  fi
+else
+  build_docker_image
+fi
+
+########################
+### Final moments :) ###
+########################
+
+export_script_path
+
+green_text 'Everything ready to run trucker-recommender-api!'
+green_text 'Please, run source ~/.zshrc'
